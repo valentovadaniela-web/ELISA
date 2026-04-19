@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELISA-Lab - Veterinárna diagnostika</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="no-print">
+    <h1>ELISA-Lab</h1>
+</header>
+
+<div class="container">
+    <div class="card no-print">
+        <h2>Správa histórie dát</h2>
+        <div class="history-controls">
+            <button class="btn btn-data" onclick="exportHistory()">💾 Uložiť históriu do súboru</button>
+            <button class="btn btn-data" onclick="document.getElementById('importFile').click()">📂 Nahrať históriu zo súboru</button>
+            <input type="file" id="importFile" onchange="importHistory(event)" accept=".json">
+            <span class="history-note">* Tento súbor pošlite kolegovi spolu s touto stránkou.</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="top-bar">
+            <div class="input-group">
+                <label>Nákaza / Protokol</label>
+                <select id="nakazaSelect" onchange="switchProtocol()"></select>
+            </div>
+            <div class="input-group">
+                <label>Test (Metóda)</label>
+                <input type="text" id="test" readonly>
+            </div>
+            <div class="input-group">
+                <label>Číslo príjmu</label>
+                <input type="text" id="prijem" placeholder="2024/xxxx">
+            </div>
+            <div class="input-group">
+                <label>Dátum vyšetrenia</label>
+                <input type="date" id="datum">
+            </div>
+            <div class="input-group">
+                <label>Vyhodnotil</label>
+                <input type="text" id="osoba" placeholder="Meno a priezvisko">
+            </div>
+        </div>
+        <!-- Dynamické prepínače typov vzoriek -->
+        <div id="sampleTypeDiv" class="type-selector" style="display: none;"><span>Typ vzorky (IBR gE):</span><label><input type="radio" name="sampleType" value="serum" checked onchange="updateInterpretBounds()"> Sérum / Plazma</label><label><input type="radio" name="sampleType" value="milk" onchange="updateInterpretBounds()"> Mlieko</label></div>
+        <div id="eblTypeDiv" class="type-selector" style="display: none;"><span>Typ vzorky (EBL):</span><label><input type="radio" name="eblType" value="individual" checked onchange="updateInterpretBounds()"> Individuálna</label><label><input type="radio" name="eblType" value="pooled" onchange="updateInterpretBounds()"> Zmesná</label></div>
+        <div id="ptbcTypeDiv" class="type-selector" style="display: none;"><span>Typ vzorky (PTBC):</span><label><input type="radio" name="ptbcType" value="serum" checked onchange="updateInterpretBounds()"> Sérum / Plazma</label><label><input type="radio" name="ptbcType" value="milkIndividual" onchange="updateInterpretBounds()"> Mlieko (individuálne)</label><label><input type="radio" name="ptbcType" value="milkPooled" onchange="updateInterpretBounds()"> Mlieko (bazénové)</label></div>
+        <div id="bvdTypeDiv" class="type-selector" style="display: none;"><span>Typ vzorky (BVD):</span><label><input type="radio" name="bvdType" value="serum" checked onchange="updateInterpretBounds()"> Sérum</label><label><input type="radio" name="bvdType" value="milk" onchange="updateInterpretBounds()"> Mlieko</label></div>
+        <div id="toxoplasmaTypeDiv" class="type-selector" style="display: none;"><span>Typ vzorky (Toxoplasma):</span><label><input type="radio" name="toxoplasmaType" value="standard" checked onchange="updateInterpretBounds()"> Štandard (sérum/plazma)</label><label><input type="radio" name="toxoplasmaType" value="dog" onchange="updateInterpretBounds()"> Psie sérum</label></div>
+    </div>
+
+    <div class="card no-print">
+        <div class="import-section">
+            <div><label>OD HODNOTY (Tabuľka z Excelu, 8x12)</label><textarea id="excelPaste" class="import-area" placeholder="Vložte mriežku hodnôt (OD 450) pre všetky jamky..."></textarea></div>
+            <div><label>ID VZORIEK (Zoznam pod sebou, pre RHDV jeden pár)</label><textarea id="idPaste" class="import-area" placeholder="Vložte zoznam ID vzoriek..."></textarea></div>
+        </div>
+        <div class="action-buttons"><button class="btn" onclick="importujVsetko()">Rozmiestniť dáta</button><button class="btn btn-primary" onclick="vypocitaj(true)">Vypočítať a Uložiť</button></div>
+        <div class="table-wrapper"><table class="plate-table"><thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr></thead><tbody id="plate-body"></tbody></table></div>
+    </div>
+
+    <div id="vysledky-sekcia" class="card" style="display:none;">
+        <h2 id="protokol-title">Protokol o vyhodnotení</h2>
+        <div class="limits-box" id="limitsBox"></div>
+        <div id="validita-info" class="validity-box"></div>
+        <table class="results-table"><thead><tr><th>Jamka / ID</th><th>ID Vzorky</th><th>OD hodnoty</th><th>Výsledok</th><th>Verdikt</th></tr></thead><tbody id="vysledky-body"></tbody></table>
+        <div class="no-print print-button"><button class="btn" onclick="window.print()">Vytlačiť do PDF</button></div>
+    </div>
+
+    <div class="card no-print"><h2>História posledných meraní</h2><div id="history-list"></div></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
