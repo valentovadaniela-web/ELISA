@@ -9,7 +9,7 @@ const PROTOCOLS = {
         interpret: { type: "sn_percent", neg: 80, dubLow: 70, dubHigh: 80, pos: 70 }
     },
     "BVD": {
-        name: "BVD (vírusová hnačka hovädzieho dobytka)",
+        name: "BVD (Vírusová hnačka hovädzieho dobytka)",
         testName: "ELISA INgezim Pestivirus Compac",
         controlWells: { pk: ["A1"], nk: ["B1"] },
         formula: "bvd_ingezim",
