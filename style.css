@@ -147,6 +147,13 @@ h2 {
     box-sizing: border-box;
 }
 
+/* Zvýraznenie aktívnej bunky pri navigácii klávesnicou */
+.cell-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+    background-color: #fef9e3;
+}
+
 .cell-pk {
     background: #fee2e2 !important;
     font-weight: bold;
