@@ -111,7 +111,14 @@ function buildPlate() {
         tr.innerHTML = `<th>${r}</th>`;
         for(let i=1; i<=12; i++){
             let well = `${r}${i}`;
-            tr.innerHTML += `<td><input type="text" class="cell-input" id="${well}"></td>`;
+            let td = document.createElement('td');
+            let input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'cell-input';
+            input.id = well;
+            input.setAttribute('tabindex', '0');  // umožní focus a navigáciu šípkami
+            td.appendChild(input);
+            tr.appendChild(td);
         }
         plateBody.appendChild(tr);
     });
@@ -628,6 +635,52 @@ function loadFromHistory(index) {
 function exportHistory() { const data=localStorage.getItem(STORAGE_KEY)||"[]"; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`elisa_historia_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 function importHistory(event) { const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ try{ const data=JSON.parse(e.target.result); if(Array.isArray(data)){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); renderHistory(); alert("História načítaná!"); } else alert("Nesprávny formát."); } catch(err){ alert("Chyba pri spracovaní."); } }; reader.readAsText(file); }
 function importujVsetko() { const raw=document.getElementById('excelPaste').value.trim(); if(raw){ const rows=raw.split(/\r?\n/); rows.forEach((row,rIdx)=>{ if(rIdx<8){ const cells=row.split('\t'); cells.forEach((val,cIdx)=>{ if(cIdx<12) document.getElementById(ROWS[rIdx]+(cIdx+1)).value=val.replace(',','.').trim(); }); } }); } }
+
+// ----- Klávesnicová navigácia šípkami v tabuľke -----
+function initKeyboardNavigation() {
+    document.addEventListener('keydown', function(e) {
+        const active = document.activeElement;
+        // Iba ak je focus na niektorom vstupnom poli tabuľky
+        if (!active || !active.classList || !active.classList.contains('cell-input')) return;
+        
+        const tableWrapper = document.querySelector('.table-wrapper');
+        if (!tableWrapper || !tableWrapper.contains(active)) return;
+        
+        const key = e.key;
+        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
+        
+        e.preventDefault();  // zabráni scrollovaniu stránky
+        
+        const id = active.id;
+        const match = id.match(/^([A-H])(\d+)$/);
+        if (!match) return;
+        
+        const rowLetter = match[1];
+        const colNum = parseInt(match[2], 10);
+        const rowIndex = ROWS.indexOf(rowLetter);
+        if (rowIndex === -1) return;
+        
+        let newRowIndex = rowIndex;
+        let newColNum = colNum;
+        
+        switch (key) {
+            case 'ArrowUp': newRowIndex--; break;
+            case 'ArrowDown': newRowIndex++; break;
+            case 'ArrowLeft': newColNum--; break;
+            case 'ArrowRight': newColNum++; break;
+        }
+        
+        if (newRowIndex >= 0 && newRowIndex < ROWS.length && newColNum >= 1 && newColNum <= 12) {
+            const newRowLetter = ROWS[newRowIndex];
+            const newId = `${newRowLetter}${newColNum}`;
+            const newInput = document.getElementById(newId);
+            if (newInput) {
+                newInput.focus();
+            }
+        }
+    });
+}
+
 function init() {
     const select=document.getElementById('nakazaSelect');
     select.innerHTML='';
@@ -636,5 +689,6 @@ function init() {
     document.getElementById('datum').valueAsDate=new Date();
     switchProtocol();
     renderHistory();
+    initKeyboardNavigation();  // zapnutie navigácie šípkami
 }
 init();
