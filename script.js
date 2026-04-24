@@ -1,5 +1,21 @@
 // ---------- KONFIGURÁCIA PROTOKOLOV (abecedne) ----------
 const PROTOCOLS = {
+    "BPI3": {
+        name: "BPI3 (Parainfluenza 3 hovädzieho dobytka)",
+        testName: "ELISA Monoscreen Ab BPI3 (Bio-X diagnostics)",
+        controlPairs: { pk: ["A1","A2"], nk: ["B1","B2"] },
+        formula: "monoscreen_sp",
+        validity: { minPKcorrOD: 0.800, maxNKcorrOD: 0.300 },
+        interpret: { type: "monoscreen_plus" }
+    },
+    "BRSV": {
+        name: "BRSV (Respiračný syncyciálny vírus HD)",
+        testName: "ELISA Monoscreen Ab BRSV (Bio-X diagnostics)",
+        controlPairs: { pk: ["A1","A2"], nk: ["B1","B2"] },
+        formula: "monoscreen_sp",
+        validity: { minPKcorrOD: 0.800, maxNKcorrOD: 0.300 },
+        interpret: { type: "monoscreen_plus" }
+    },
     "Bluetongue": {
         name: "Bluetongue (Katarálna horúčka oviec)",
         testName: "ELISA BT Ab (IDEXX)",
@@ -9,7 +25,7 @@ const PROTOCOLS = {
         interpret: { type: "sn_percent", neg: 80, dubLow: 70, dubHigh: 80, pos: 70 }
     },
     "BVD": {
-        name: "BVD (Vírusová hnačka hovädzieho dobytka)",
+        name: "BVD (vírusová hnačka hovädzieho dobytka)",
         testName: "ELISA INgezim Pestivirus Compac",
         controlWells: { pk: ["A1"], nk: ["B1"] },
         formula: "bvd_ingezim",
@@ -134,6 +150,9 @@ function highlightControls() {
     } else if(proto.formula === "correctedOD" && proto.controlPairs) {
         if(proto.controlPairs.pk) proto.controlPairs.pk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-pk'); });
         if(proto.controlPairs.nk) proto.controlPairs.nk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-nk'); });
+    } else if(proto.formula === "monoscreen_sp" && proto.controlPairs) {
+        if(proto.controlPairs.pk) proto.controlPairs.pk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-pk'); });
+        if(proto.controlPairs.nk) proto.controlPairs.nk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-nk'); });
     } else if(proto.controlWells) {
         if(proto.controlWells.pk) proto.controlWells.pk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-pk'); });
         if(proto.controlWells.nk) proto.controlWells.nk.forEach(w => { let el = document.getElementById(w); if(el) el.classList.add('cell-nk'); });
@@ -184,6 +203,7 @@ function updateLimitsBox() {
     else if(proto.formula === "bluetongue") validityHtml += `<p>• Priemerná OD NK v rozmedzí <strong>${proto.validity.minNK} - ${proto.validity.maxNK}</strong></p><p>• S/N% PK <strong>< ${proto.validity.maxPKsn} %</strong></p>`;
     else if(proto.formula === "rhdv_cutoff") validityHtml += `<p>• OD PK <strong>> ${proto.validity.minPK}</strong></p><p>• OD NK <strong>< Cut-off</strong> (Cut-off = 0,15 × OD PK)</p>`;
     else if(proto.formula === "toxoplasma_sp") validityHtml += `<p>• Priemerná OD PK <strong>> ${proto.validity.minPK}</strong></p><p>• Pomer (priemer PK / priemer NK) <strong>> ${proto.validity.minRatioPK_NK}</strong></p>`;
+    else if(proto.formula === "monoscreen_sp") validityHtml += `<p>• Čistá OD PK (A1−A2) <strong>> ${proto.validity.minPKcorrOD}</strong></p><p>• Čistá OD NK (B1−B2) <strong>< ${proto.validity.maxNKcorrOD}</strong></p>`;
     validityHtml += `</div>`;
     
     let interpretHtml = `<div class="limit-group"><h4>Kritériá interpretácie vzoriek</h4>`;
@@ -196,6 +216,7 @@ function updateLimitsBox() {
     else if(proto.interpret.type === 'sn_percent') interpretHtml += `<p><span style="color:var(--danger)">■</span> POZITÍVNA: S/N% ≤ 70 %</p><p><span style="color:var(--warning)">■</span> DUBIÓZNA: 70 - 80 %</p><p><span style="color:var(--success)">■</span> NEGATÍVNA: S/N% ≥ 80 %</p>`;
     else if(proto.interpret.type === 'cutoff') interpretHtml += `<p><span style="color:var(--danger)">■</span> POZITÍVNA: OD > Cut-off (0,15×ODPK)</p><p><span style="color:var(--success)">■</span> NEGATÍVNA: OD < Cut-off</p><p>Pre vzorky v duplikáte sa používa priemer OD.</p>`;
     else if(proto.interpret.type === 'sp_percent') { if(currentToxoplasmaType === 'standard') interpretHtml += `<p><span style="color:var(--success)">■</span> NEGATÍVNA: S/P% ≤ 40 %</p><p><span style="color:var(--warning)">■</span> DUBIÓZNA: 40 - 50 %</p><p><span style="color:var(--danger)">■</span> POZITÍVNA: S/P% ≥ 50 %</p>`; else interpretHtml += `<p><span style="color:var(--success)">■</span> NEGATÍVNA: S/P% ≤ 40 %</p><p><span style="color:var(--warning)">■</span> DUBIÓZNA: 40 - 70 %</p><p><span style="color:var(--danger)">■</span> POZITÍVNA: S/P% ≥ 70 %</p><p><em>(špecifické pre psie sérum)</em></p>`; }
+    else if(proto.interpret.type === 'monoscreen_plus') interpretHtml += `<p><span style="color:var(--success)">■</span> NEGATÍVNA: S/P% ≤ 20 %</p><p><span style="color:var(--danger)">■</span> POZITÍVNA (titrovaná):</p><p>&nbsp;&nbsp;+ : 21 – 40 %</p><p>&nbsp;&nbsp;++ : 41 – 60 %</p><p>&nbsp;&nbsp;+++ : 61 – 80 %</p><p>&nbsp;&nbsp;++++ : 81 – 100 %</p><p>&nbsp;&nbsp;+++++ : nad 100 %</p>`;
     interpretHtml += `</div>`;
     limitsDiv.innerHTML = validityHtml + interpretHtml;
 }
@@ -205,6 +226,7 @@ function getSampleWells() {
     let controlSet = new Set();
     if(proto.formula === "cleanOD" && proto.controlPairs) { if(proto.controlPairs.pk) proto.controlPairs.pk.forEach(w=>controlSet.add(w)); if(proto.controlPairs.nk) proto.controlPairs.nk.forEach(w=>controlSet.add(w)); }
     else if(proto.formula === "correctedOD" && proto.controlPairs) { if(proto.controlPairs.pk) proto.controlPairs.pk.forEach(w=>controlSet.add(w)); if(proto.controlPairs.nk) proto.controlPairs.nk.forEach(w=>controlSet.add(w)); }
+    else if(proto.formula === "monoscreen_sp" && proto.controlPairs) { if(proto.controlPairs.pk) proto.controlPairs.pk.forEach(w=>controlSet.add(w)); if(proto.controlPairs.nk) proto.controlPairs.nk.forEach(w=>controlSet.add(w)); }
     else if(proto.controlWells) { if(proto.controlWells.pk) proto.controlWells.pk.forEach(w=>controlSet.add(w)); if(proto.controlWells.nk) proto.controlWells.nk.forEach(w=>controlSet.add(w)); }
     if(proto.blankWell) controlSet.add(proto.blankWell);
     const wells = [];
@@ -569,6 +591,39 @@ function vypocitaj(save = true) {
             idx++;
         }
         document.getElementById('validita-info').innerHTML = `STATUS: ${isValid?'VALIDNÝ':'NEVALIDNÝ'} | Priemer PK: ${avgPK.toFixed(3)} (min>${proto.validity.minPK}) | Priemer NK: ${avgNK.toFixed(3)} | Pomer PK/NK: ${ratio.toFixed(2)} (požadovaný >${proto.validity.minRatioPK_NK}) ${!isValid?'<br><span style="color:red;">'+msg+'</span>':''}`;
+        document.getElementById('validita-info').style.background = isValid?"#f0fdf4":"#fef2f2";
+        document.getElementById('vysledky-sekcia').style.display="block";
+        if(save) saveGeneric();
+    }
+    else if(proto.formula === "monoscreen_sp") {
+        const pkPlus=getV("A1"), pkMinus=getV("A2"), nkPlus=getV("B1"), nkMinus=getV("B2");
+        const corrPK = pkPlus - pkMinus;
+        const corrNK = nkPlus - nkMinus;
+        let isValid=true, msg="";
+        if(corrPK <= proto.validity.minPKcorrOD) { isValid=false; msg+=`Čistá OD PK (${corrPK.toFixed(3)}) ≤ ${proto.validity.minPKcorrOD}. `; }
+        if(corrNK >= proto.validity.maxNKcorrOD) { isValid=false; msg+=`Čistá OD NK (${corrNK.toFixed(3)}) ≥ ${proto.validity.maxNKcorrOD}. `; }
+        const idArr = document.getElementById('idPaste').value.split(/\r?\n/).filter(l=>l.trim());
+        const pairs = getSamplePairs();
+        const tbody = document.getElementById('vysledky-body');
+        tbody.innerHTML = "";
+        let idx=0;
+        for(let p of pairs) {
+            const odP=getV(p.minus), odM=getV(p.plus);
+            if(odP===0 && odM===0 && document.getElementById(p.minus).value.trim()==="") continue;
+            const corr = odP - odM;
+            const sp = (corr / corrPK) * 100;
+            let verdict="", cls="";
+            if(sp <= 20) { verdict="Negatívna"; cls="badge-neg"; }
+            else if(sp <= 40) { verdict="Pozitívna (+)"; cls="badge-pos"; }
+            else if(sp <= 60) { verdict="Pozitívna (++)"; cls="badge-pos"; }
+            else if(sp <= 80) { verdict="Pozitívna (+++)"; cls="badge-pos"; }
+            else if(sp <= 100) { verdict="Pozitívna (++++)"; cls="badge-pos"; }
+            else { verdict="Pozitívna (+++++)"; cls="badge-pos"; }
+            const vzid = (idx<idArr.length)?idArr[idx]:`Vzorka ${p.minus}/${p.plus}`;
+            tbody.innerHTML += `<tr><td>${p.minus}/${p.plus}</td><td>${vzid}</td><td>${odP.toFixed(3)} / ${odM.toFixed(3)}</td><td>kor.OD=${corr.toFixed(3)}<br>S/P=${sp.toFixed(1)}%</td><td><span class="badge ${cls}">${verdict}</span></td></tr>`;
+            idx++;
+        }
+        document.getElementById('validita-info').innerHTML = `STATUS: ${isValid?'VALIDNÝ':'NEVALIDNÝ'} | Čistá OD PK: ${corrPK.toFixed(3)} (požadované >${proto.validity.minPKcorrOD}) | Čistá OD NK: ${corrNK.toFixed(3)} (požadované <${proto.validity.maxNKcorrOD}) ${!isValid?'<br><span style="color:red;">'+msg+'</span>':''}`;
         document.getElementById('validita-info').style.background = isValid?"#f0fdf4":"#fef2f2";
         document.getElementById('vysledky-sekcia').style.display="block";
         if(save) saveGeneric();
